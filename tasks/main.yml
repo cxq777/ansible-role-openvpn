@@ -49,6 +49,22 @@
         creates: /etc/openvpn/server/{{ service_name }}/easy-rsa/pki/issued/{{ cn }}.crt
       environment:
         EASYRSA_BATCH: "yes"
+    - name: Read remote file content client.key
+      slurp:
+        path: /etc/openvpn/server/{{ service_name }}/easy-rsa/pki/private/{{ cn }}.key
+      register: client_key
+    - name: Read remote file content client.crt
+      slurp:
+        path: /etc/openvpn/server/{{ service_name }}/easy-rsa/pki/issued/{{ cn }}.crt
+      register: client_crt
+    - name: Read remote file content ca.crt
+      slurp:
+        path: /etc/openvpn/server/{{ service_name }}/easy-rsa/pki/ca.crt
+      register: ca_crt
+    - name: Read remote file content ta.key
+      slurp:
+        path: /etc/openvpn/server/{{ service_name }}/easy-rsa/pki/ta.key
+      register: ta_key
     - name: create client ovpn file
       ansible.builtin.template:
         src: client.ovpn.j2
