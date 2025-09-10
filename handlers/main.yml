@@ -5,3 +5,7 @@
   ansible.builtin.service:
     name: "{{ openvpn_service }}"
     state: restarted
+
+- name: download ovpn file
+  ansible.builtin.debug:
+    msg: "Client configuration file {{ cn }}.ovpn has been generated and saved to volume/openvpn/client/"

@@ -23,5 +23,38 @@
     enabled: true
   when:
     - openvpn_role == "server"
-# - name: Gen client
-#   ansible.builtin.script: bin/ovpn_genclient
+- name: gen client
+  tags: "openvpn-gen-client"
+  block:
+    - name: create local client folder
+      delegate_to: localhost
+      file:
+        path: volume/openvpn/client
+        state: directory
+    - name: confirm common name
+      pause:
+        prompt: "common name"
+      register: cn_input
+      when: cn is not defined
+    - set_fact:
+        cn: "{{ cn_input.user_input }}"
+      when: cn_input.user_input is defined
+    - name: gen openvpn client pki
+      ansible.builtin.command:
+        cmd: "{{ openvpn_easyrsa_path }}/easyrsa build-client-full {{ cn }} nopass"
+        chdir: /etc/openvpn/server/{{ service_name }}/easy-rsa
+        creates: /etc/openvpn/server/{{ service_name }}/easy-rsa/pki/issued/{{ cn }}.crt
+      environment:
+        EASYRSA_BATCH: "yes"
+    - name: create client ovpn file
+      ansible.builtin.template:
+        src: client.ovpn.j2
+        dest: /tmp/{{ cn }}.ovpn
+        mode: "0644"
+    - name: fetch client ovpn file to local
+      ansible.builtin.fetch:
+        src: /tmp/{{ cn }}.ovpn
+        dest: volume/openvpn/client/{{ cn }}.ovpn
+        flat: true
+      notify:
+        - download ovpn file
