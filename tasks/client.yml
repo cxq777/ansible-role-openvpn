@@ -1,19 +1,75 @@
 ---
 
-- name: client | Ensure /etc/openvpn/client exists
-  ansible.builtin.file:
-    path: /etc/openvpn/client
-    state: directory
-    owner: root
-    group: "{{ openvpn_group }}"
-    mode: "0750"
+# - name: client | Ensure /etc/openvpn/client exists
+#   ansible.builtin.file:
+#     path: /etc/openvpn/client
+#     state: directory
+#     owner: root
+#     group: "{{ openvpn_group }}"
+#     mode: "0750"
 
-- name: client | Place client.conf
+# - name: client | Place client.conf
+#   ansible.builtin.template:
+#     src: client.conf.j2
+#     dest: "{{ openvpn_configuration_directory }}/client.conf"
+#     owner: root
+#     group: "{{ openvpn_group }}"
+#     mode: "0640"
+#   notify:
+#     - Restart openvpn
+
+- name: client | Ensure /etc/openvpn/server/{{ service_name }}/client exists
+  ansible.builtin.file:
+    path: /etc/openvpn/server/{{ service_name }}/client
+    state: directory
+    mode: "0755"
+
+- name: client | Easyrsa build-client-full {{ cn }} nopass
+  ansible.builtin.command:
+    cmd: "{{ openvpn_easyrsa_path }}/easyrsa build-client-full {{ cn }} nopass"
+    chdir: /etc/openvpn/server/{{ service_name }}/easy-rsa
+    creates: /etc/openvpn/server/{{ service_name }}/easy-rsa/pki/issued/{{ cn }}.crt
+  environment:
+    EASYRSA_BATCH: "yes"
+
+# - name: client | Copy files to /etc/openvpn/server
+#   ansible.builtin.copy:
+#     src: /etc/openvpn/server/{{ service_name }}/easy-rsa/pki/{{ item }}
+#     dest: /etc/openvpn/server/{{ service_name }}/{{ item | basename }}
+#     mode: "0640"
+#     remote_src: true
+#   loop:
+#     - ca.crt
+#     - dh.pem
+#     - ta.key
+#     - issued/client.crt
+#     - issued/server.crt
+#     - private/ca.key
+#     - private/client.key
+#     - private/server.key
+
+- name: client | Read remote file content client.key
+  slurp:
+    path: /etc/openvpn/server/{{ service_name }}/easy-rsa/pki/private/{{ cn }}.key
+  register: client_key
+
+- name: client | Read remote file content client.crt
+  slurp:
+    path: /etc/openvpn/server/{{ service_name }}/easy-rsa/pki/issued/{{ cn }}.crt
+  register: client_crt
+
+- name: client | Read remote file content ca.crt
+  slurp:
+    path: /etc/openvpn/server/{{ service_name }}/easy-rsa/pki/ca.crt
+  register: ca_crt
+
+- name: client | Read remote file content ta.key
+  slurp:
+    path: /etc/openvpn/server/{{ service_name }}/easy-rsa/pki/ta.key
+  register: ta_key
+
+- name: client | Place client.ovpn
   ansible.builtin.template:
-    src: client.conf.j2
-    dest: "{{ openvpn_configuration_directory }}/client.conf"
-    owner: root
-    group: "{{ openvpn_group }}"
-    mode: "0640"
-  notify:
-    - Restart openvpn
+    src: client.ovpn.j2
+    dest: "{{ openvpn_configuration_directory }}/server/{{ service_name }}/client/{{ cn }}.ovpn"
+

@@ -1,26 +1,26 @@
 {{ ansible_managed | comment }}
 
-port 1194
+port {{ server_port }}
 proto udp
 dev tun
-ca /etc/openvpn/server/ca.crt
-cert /etc/openvpn/server/server.crt
-key /etc/openvpn/server/server.key
-dh /etc/openvpn/server/dh.pem
+ca /etc/openvpn/server/{{ service_name }}/ca.crt
+cert /etc/openvpn/server/{{ service_name }}/server.crt
+key /etc/openvpn/server/{{ service_name }}/server.key
+dh /etc/openvpn/server/{{ service_name }}/dh.pem
 topology subnet
-server 10.8.0.0 255.255.255.0
-ifconfig-pool-persist ipp.txt
-push "redirect-gateway def1 bypass-dhcp"
-push "dhcp-option DNS 1.1.1.1"
-push "dhcp-option DNS 1.0.0.1"
+server {{ server_subnet }}
+ifconfig-pool-persist {{ service_name }}/ipp.txt
 keepalive 10 120
-# tls-crypt /etc/openvpn/server/myvpn.tlsauth 0
+tls-auth /etc/openvpn/server/{{ service_name }}/ta.key 0
 cipher AES-256-CBC
 user nobody
 group {{ openvpn_group }}
 persist-key
 persist-tun
-status openvpn-status.log
+status {{ service_name }}/openvpn-status.log
 verb 3
 explicit-exit-notify 1
+client-config-dir /etc/openvpn/server/{{ service_name }}/ccd
 remote-cert-eku "TLS Web Client Authentication"
+
+{{ extra_conf }}

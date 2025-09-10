@@ -38,12 +38,12 @@ openvpn_group: "{{ _openvpn_group[ansible_os_family] | default(_openvpn_group['d
 
 _openvpn_service:
   server:
-    default: openvpn@server
+    default: openvpn-server@{{ service_name }}
     RedHat-7: openvpn@server
     RedHat: openvpn-server@server
     Ubuntu: openvpn
   client:
-    default: openvpn@client
+    default: openvpn-client@{{ service_name }}
     RedHat-7: openvpn@client
     RedHat: openvpn-client@client
     Ubuntu: openvpn

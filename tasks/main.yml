@@ -21,3 +21,7 @@
     name: "{{ openvpn_service }}"
     state: started
     enabled: true
+  when:
+    - openvpn_role == "server"
+# - name: Gen client
+#   ansible.builtin.script: bin/ovpn_genclient

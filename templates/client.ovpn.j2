@@ -1,0 +1,25 @@
+{{ ansible_managed | comment }}
+
+client
+remote {{ openvpn_client_remote }}
+nobind
+dev tun
+remote-cert-tls server
+key-direction 1
+
+
+<key>
+{{ client_key.content | b64decode }}
+</key>
+
+<cert>
+{{ client_crt.content | b64decode }}
+</cert>
+
+<ca>
+{{ ca_crt.content | b64decode }}
+</ca>
+
+<tls-auth>
+{{ ta_key.content | b64decode }}
+</tls-auth>
