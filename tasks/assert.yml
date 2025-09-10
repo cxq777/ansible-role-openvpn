@@ -5,7 +5,7 @@
     that:
       - openvpn_role is defined
       - openvpn_role is string
-      - openvpn_role in [ "client", "server" ]
+      - openvpn_role in [ "client", "server", "gen" ]
     quiet: true
 
 # - name: assert | Test openvpn_client_remote

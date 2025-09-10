@@ -11,10 +11,14 @@
   ansible.builtin.package:
     name: "{{ openvpn_packages }}"
     state: present
+  when:
+    - openvpn_role != "gen"
 
 - name: Setup openvpn server or client
   ansible.builtin.include_tasks:
     file: "{{ openvpn_role }}.yml"
+  when:
+    - openvpn_role != "gen"
 
 - name: Start and enable openvpn
   ansible.builtin.service:
@@ -24,7 +28,6 @@
   when:
     - openvpn_role == "server"
 - name: gen client
-  tags: "openvpn-gen-client"
   block:
     - name: create local client folder
       delegate_to: localhost
@@ -58,3 +61,5 @@
         flat: true
       notify:
         - download ovpn file
+  when:
+    - openvpn_role == "gen"
