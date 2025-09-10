@@ -47,5 +47,7 @@ _openvpn_service:
     RedHat-7: openvpn@client
     RedHat: openvpn-client@client
     Ubuntu: openvpn
+  gen:
+    default: ""
 
 openvpn_service: "{{ _openvpn_service[openvpn_role][ansible_os_family ~ '-' ~ ansible_distribution_major_version] | default(_openvpn_service[openvpn_role][ansible_os_family] | default(_openvpn_service[openvpn_role]['default'] )) }}"

@@ -5,6 +5,7 @@
   ansible.builtin.service:
     name: "{{ openvpn_service }}"
     state: restarted
+  when: openvpn_service != ""
 
 - name: download ovpn file
   ansible.builtin.debug:
